@@ -1,7 +1,16 @@
 package com.forcemc.lightsabers.crystals;
 
+import com.bergerkiller.bukkit.common.nbt.CommonTag;
+import com.bergerkiller.bukkit.common.nbt.CommonTagCompound;
+import com.bergerkiller.bukkit.common.utils.ItemUtil;
+import com.bergerkiller.generated.net.minecraft.world.item.ItemHandle;
+import com.forcemc.lightsabers.inventory.ItemBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -57,6 +66,12 @@ public class Crystal implements ConfigurationSerializable {
         map.put("hex", hexCode);
 
         return map;
+    }
+
+    public ItemStack buildItem() {
+        ItemStack itemStack = new ItemBuilder(Material.PAPER).displayName(Component.text(getName()).color(TextColor.fromHexString(getHexCode()))).build();
+        ItemUtil.getMetaTag(itemStack, true).putValue("isHilt", boolean.class, true);
+        return itemStack;
     }
 
     public static Crystal deserialize(Map<String, Object> map) {

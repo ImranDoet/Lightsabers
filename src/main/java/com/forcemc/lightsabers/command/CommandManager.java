@@ -12,8 +12,8 @@ import cloud.commandframework.minecraft.extras.MinecraftHelp;
 import cloud.commandframework.paper.PaperCommandManager;
 import com.forcemc.lightsabers.Lightsabers;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -67,6 +67,14 @@ public class CommandManager {
     @CommandPermission("lightsabers.crystals.manage")
     public void commandCrystals(final @NonNull Player player) {
         lightsabers.getInventoryManager().buildCrystals(player);
+    }
+
+    @CommandMethod("lightsabers forge")
+    @CommandDescription("Opens the forge menu")
+    @CommandPermission("lightsabers.forge")
+    public void commandForge(final @NonNull Player player) {
+        player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+        lightsabers.getInventoryManager().buildForge(player);
     }
 
 }
