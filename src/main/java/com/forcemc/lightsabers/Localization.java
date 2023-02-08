@@ -7,6 +7,7 @@ public class Localization extends LocalizationEnum {
 
     public static final Localization FORGE_MENU_OPENED = new Localization("forge.menu opened", "&aYou opened the forge!");
 
+    public static final Localization CONFIG_RELOADED = new Localization("config reloaded", "&aConfig reloaded!");
 
     public static final Localization CRYSTALS_MENU_OPENED = new Localization("crystals.menu opened", "&aYou opened the crystals menu!");
 

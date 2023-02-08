@@ -13,8 +13,11 @@ import io.github.rysefoxx.inventory.anvilgui.AnvilGUI;
 import io.github.rysefoxx.inventory.plugin.content.IntelligentItem;
 import io.github.rysefoxx.inventory.plugin.content.InventoryContents;
 import io.github.rysefoxx.inventory.plugin.content.InventoryProvider;
+import io.github.rysefoxx.inventory.plugin.enums.Action;
 import io.github.rysefoxx.inventory.plugin.enums.DisabledEvents;
+import io.github.rysefoxx.inventory.plugin.enums.DisabledInventoryClick;
 import io.github.rysefoxx.inventory.plugin.enums.InventoryOpenerType;
+import io.github.rysefoxx.inventory.plugin.other.EventCreator;
 import io.github.rysefoxx.inventory.plugin.pagination.Pagination;
 import io.github.rysefoxx.inventory.plugin.pagination.RyseAnvil;
 import io.github.rysefoxx.inventory.plugin.pagination.RyseInventory;
@@ -22,15 +25,23 @@ import io.github.rysefoxx.inventory.plugin.pagination.SlotIterator;
 import net.Indyuce.mmoitems.MMOItems;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.*;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-import java.util.Collections;
+import java.awt.Color;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class InventoryManager {
     private final Lightsabers lightsabers;
@@ -109,7 +120,7 @@ public class InventoryManager {
                     }).build(lightsabers, inventoryManager).open(player);
                 }));
 
-                contents.set(4, IntelligentItem.of(new ItemBuilder(Material.ANVIL).displayName(Component.text("Give hilt").color(NamedTextColor.RED)).build(), inventoryClickEvent -> {
+                contents.set(4, IntelligentItem.of(new ItemBuilder(Material.ANVIL).displayName(Component.text("Give crystal").color(NamedTextColor.RED)).build(), inventoryClickEvent -> {
                     player.getInventory().addItem(crystal.buildItem());
                 }));
 
@@ -142,44 +153,111 @@ public class InventoryManager {
     }
 
     public void buildForge(Player player) {
-        RyseInventory.builder().ignoreEvents(DisabledEvents.INVENTORY_DRAG).ignoredSlots(lightsabers.getConfigurationManager().getCrystalSlot(), lightsabers.getConfigurationManager().getForgeSlot(), lightsabers.getConfigurationManager().getSaberSlot(), lightsabers.getConfigurationManager().getHiltSlot()).title(Component.text(ChatColor.translateAlternateColorCodes('&', lightsabers.getConfigurationManager().getInventoryTitle()))).rows(3).provider(new InventoryProvider() {
+        RyseInventory.builder().title(ChatColor.translateAlternateColorCodes('&', lightsabers.getConfigurationManager().getInventoryTitle())).rows(lightsabers.getConfigurationManager().getRowsForge()).ignoreClickEvent(DisabledInventoryClick.BOTTOM).ignoredSlots(lightsabers.getConfigurationManager().getHiltSlot(), lightsabers.getConfigurationManager().getSaberSlot(), lightsabers.getConfigurationManager().getCrystalSlot()).provider(new InventoryProvider() {
             @Override
             public void init(Player player, InventoryContents contents) {
+                contents.set(lightsabers.getConfigurationManager().getForgeSlot(), IntelligentItem.of(new ItemBuilder(Material.PAPER).displayName(lightsabers.getConfigurationManager().getForgeButtonName()).modelData(lightsabers.getConfigurationManager().getInvisibleModelData()).build(), inventoryClickEvent -> {
+                    if (contents.get(lightsabers.getConfigurationManager().getCrystalSlot()).isEmpty() || contents.get(lightsabers.getConfigurationManager().getHiltSlot()).isEmpty()) return;
+                    ItemStack hiltItem = contents.get(lightsabers.getConfigurationManager().getHiltSlot()).get().getItemStack();
+                    if (!isHilt(hiltItem)) return;
+
+                    ItemStack crystalItem = contents.get(lightsabers.getConfigurationManager().getCrystalSlot()).get().getItemStack();
+                    if (!isCrystal(crystalItem)) return;
+
+                    Optional<Crystal> optionalCrystal = getCrystal(crystalItem);
+                    if (optionalCrystal.isPresent()) {
+                        Crystal crystal = optionalCrystal.get();
+
+                        ItemStack saber = hiltItem.clone();
+                        ItemMeta itemMeta = saber.getItemMeta();
+                        itemMeta.addItemFlags(ItemFlag.HIDE_DYE);
+                        itemMeta.displayName(Component.text("Lightsaber").color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
+                        List<Component> components = new ArrayList<>();
+                        for (Component component : itemMeta.lore()) {
+                            Component component1 = component.replaceText(TextReplacementConfig.builder().match("Hilt").replacement("Lightsaber").build()).replaceText(TextReplacementConfig.builder().match("hilt").replacement("lightsaber").build());
+                            components.add(component1);
+                        }
+                        itemMeta.lore(components);
+                        saber.setItemMeta(itemMeta);
+
+                        LeatherArmorMeta leatherArmorMeta = (LeatherArmorMeta) saber.getItemMeta();
+                        Color javaColor = Color.decode(crystal.getHexCode());
+                        leatherArmorMeta.setColor(org.bukkit.Color.fromRGB(javaColor.getRed(), javaColor.getGreen(), javaColor.getBlue()));
+                        saber.setItemMeta(leatherArmorMeta);
+
+                        ItemStack itemStack = ItemUtil.createItem(saber);
+                        CommonTagCompound commonTagCompound = ItemUtil.getMetaTag(itemStack, true);
+                        commonTagCompound.putValue("convertedToSaber", boolean.class, true);
+                        contents.updateOrSet(lightsabers.getConfigurationManager().getSaberSlot(), itemStack);
+                        contents.update(lightsabers.getConfigurationManager().getHiltSlot(), new ItemBuilder(Material.AIR).build());
+                        contents.update(lightsabers.getConfigurationManager().getCrystalSlot(), new ItemBuilder(Material.AIR).build());
+                        update(player, contents);
+                        player.playSound(player, Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
+                    }
+                }));
+
                 contents.addAdvancedSlot(lightsabers.getConfigurationManager().getCrystalSlot(), inventoryClickEvent -> {
-                    if (!isCrystal(inventoryClickEvent.getCurrentItem()) && !inventoryClickEvent.getClickedInventory().equals(player.getInventory())) {
+                    if (inventoryClickEvent.getClick().isShiftClick()) {
                         inventoryClickEvent.setCancelled(true);
+                        return;
+                    }
+
+                    if (inventoryClickEvent.getAction().name().toLowerCase().contains("place")) {
+                        ItemStack itemStack = inventoryClickEvent.getCursor();
+
+                        if (!isCrystal(itemStack)) {
+                            player.playSound(player, Sound.ENTITY_VILLAGER_HURT, 1.0f, 1.0f);
+                            inventoryClickEvent.setCancelled(true);
+                        }
                     }
                 });
 
                 contents.addAdvancedSlot(lightsabers.getConfigurationManager().getHiltSlot(), inventoryClickEvent -> {
-                    if (!isHilt(inventoryClickEvent.getCurrentItem()) && !inventoryClickEvent.getClickedInventory().equals(player.getInventory())) {
+                    if (inventoryClickEvent.getClick().isShiftClick()) {
                         inventoryClickEvent.setCancelled(true);
+                        return;
+                    }
+                    if (inventoryClickEvent.getAction().name().toLowerCase().contains("place")) {
+                        ItemStack itemStack = inventoryClickEvent.getCursor();
+
+                        if (!isHilt(itemStack)) {
+                            player.playSound(player, Sound.ENTITY_VILLAGER_HURT, 1.0f, 1.0f);
+                            inventoryClickEvent.setCancelled(true);
+                        }
                     }
                 });
-
-                contents.addAdvancedSlot(lightsabers.getConfigurationManager().getSaberSlot(), inventoryClickEvent -> {
-                    if (inventoryClickEvent.getClick() == ClickType.DROP || inventoryClickEvent.getClick() == ClickType.CONTROL_DROP) {
-                        inventoryClickEvent.setCancelled(true);
-                    };
-                });
-
-                contents.set(lightsabers.getConfigurationManager().getForgeSlot(), IntelligentItem.of(new ItemBuilder(Material.ANVIL).displayName(Component.text("Build").color(NamedTextColor.GRAY)).build(), inventoryClickEvent -> {
-
-                }));
             }
-
-
         }).build(lightsabers, inventoryManager).open(player);
 
     }
 
     public boolean isHilt(ItemStack itemStack) {
-        return MMOItems.getType(itemStack).getId().equalsIgnoreCase("hilt");
+        if (itemStack == null) return false;
+        if (MMOItems.getTypeName(itemStack) == null) return false;
+
+        return MMOItems.getTypeName(itemStack).equalsIgnoreCase("hilt");
+    }
+
+    public boolean hasBeenConvertedToSaber(ItemStack itemStack) {
+        if (itemStack == null) return false;
+        if (ItemUtil.getMetaTag(ItemUtil.createItem(itemStack)) == null) return false;
+
+        return ItemUtil.getMetaTag(ItemUtil.createItem(itemStack)).containsKey("convertedToSaber");
     }
 
     public boolean isCrystal(ItemStack itemStack) {
-        if (ItemUtil.getMetaTag(itemStack)  == null) return false;
-        return ItemUtil.getMetaTag(itemStack).getValue("isHilt", boolean.class);
+        if (itemStack == null) return false;
+        if (ItemUtil.getMetaTag(ItemUtil.createItem(itemStack)) == null) return false;
+
+        return ItemUtil.getMetaTag(ItemUtil.createItem(itemStack)).containsKey("isCrystal");
+    }
+
+    public Optional<Crystal> getCrystal(ItemStack itemStack) {
+        if (itemStack == null) return Optional.empty();
+        if (ItemUtil.getMetaTag(ItemUtil.createItem(itemStack)) == null) return Optional.empty();
+
+        return lightsabers.getCrystalManager().getCrystal(UUID.fromString(ItemUtil.getMetaTag(ItemUtil.createItem(itemStack)).getValue("crystalID", String.class)));
+
     }
 
 }

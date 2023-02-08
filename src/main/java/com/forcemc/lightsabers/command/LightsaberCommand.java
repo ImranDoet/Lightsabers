@@ -11,7 +11,7 @@ import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-@CommandAlias("lightsabers|lightsaber")
+@CommandAlias("lightsabers|lightsaber|lsb")
 public class LightsaberCommand extends BaseCommand {
 
     @Dependency
@@ -38,6 +38,14 @@ public class LightsaberCommand extends BaseCommand {
         Crystal crystal = new Crystal(name, hexCode);
         lightsabers.getCrystalManager().createCrystal(crystal);
         player.sendMessage(Localization.CRYSTAL_CREATED.get());
+    }
+
+    @Subcommand("reloadconfig")
+    @Description("Reloads the config")
+    @CommandPermission("lightsabers.reloadconfig")
+    public void commandReloadConfig(Player player) {
+        player.sendMessage(Localization.CONFIG_RELOADED.get());
+        Lightsabers.getLightsabers().getConfigurationManager().loadConfig();
     }
 
     @Subcommand("forge")

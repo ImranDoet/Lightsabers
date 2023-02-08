@@ -10,7 +10,8 @@ public class ConfigurationManager {
 
     private FileConfiguration configuration, crystals;
 
-    private int forgeSlot, hiltSlot, saberSlot, crystalSlot;
+    private int forgeSlot, hiltSlot, saberSlot, crystalSlot, rowsForge, invisibleModelData;
+    private String forgeButtonName;
     private boolean fresh;
     private String inventoryTitle;
 
@@ -18,14 +19,21 @@ public class ConfigurationManager {
         this.lightsabers = lightsabers;
     }
 
-    public void load() {
-        ConfigurationSerialization.registerClass(Crystal.class);
-
+    public void loadConfig() {
         configuration = new FileConfiguration(lightsabers);
         configuration.load();
 
         configuration.setHeader("options.forge.inventory title", "This is the title for the forge inventory");
         inventoryTitle = configuration.get("options.forge.inventory title", "&3Lightsaber Forge");
+
+        configuration.setHeader("options.forge.rows", "The amount of rows");
+        rowsForge = configuration.get("options.forge.rows", 2);
+
+        configuration.setHeader("options.forge.invisible model data", "The model data of paper for the invisible forge button");
+        invisibleModelData = configuration.get("options.forge.invisible model data", 6969);
+
+        configuration.setHeader("options.forge.invisible model name", "The name of the invisible forge button");
+        forgeButtonName = configuration.get("options.forge.invisible model name", "&c&oForge saber");
 
         configuration.setHeader("options.forge.slots.forge button", "This is the slot for the final forging button (1-18)");
         forgeSlot = configuration.get("options.forge.slots.forge button", 11);
@@ -40,7 +48,12 @@ public class ConfigurationManager {
         saberSlot = configuration.get("options.forge.slots.saber output", 8);
 
         configuration.save();
+    }
 
+    public void load() {
+        ConfigurationSerialization.registerClass(Crystal.class);
+
+        loadConfig();
         crystals = new FileConfiguration(lightsabers, "crystals.yml");
         if (!crystals.exists()) fresh = true;
         crystals.load();
@@ -74,7 +87,17 @@ public class ConfigurationManager {
         return saberSlot - 1;
     }
 
+    public int getRowsForge() {
+        return rowsForge;
+    }
 
+    public int getInvisibleModelData() {
+        return invisibleModelData;
+    }
+
+    public String getForgeButtonName() {
+        return forgeButtonName;
+    }
 
     public String getInventoryTitle() {
         return inventoryTitle;

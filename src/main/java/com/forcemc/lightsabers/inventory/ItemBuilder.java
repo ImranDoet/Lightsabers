@@ -48,6 +48,7 @@ public class ItemBuilder {
     private final HashMap<String, Object> data = new HashMap<>();
     private ItemStack itemStack;
     private String displayName;
+    private int modelData;
     private @Nullable Component textComponent;
     private Material material;
     private int amount;
@@ -61,6 +62,7 @@ public class ItemBuilder {
     private List<ItemFlag> flags = new ArrayList<>();
     private List<String> lore = new ArrayList<>();
     private Map<Enchantment, Integer> enchantments = new HashMap<>();
+    private boolean hide;
 
 
     /**
@@ -546,6 +548,16 @@ public class ItemBuilder {
         return this;
     }
 
+    public ItemBuilder modelData(int data) {
+        this.modelData = data;
+        return this;
+    }
+
+    public ItemBuilder hide() {
+        this.hide = true;
+        return this;
+    }
+
     public ItemStack build() {
         if (this.itemStack == null) {
             this.itemStack = new ItemStack(this.material, this.amount);
@@ -554,7 +566,7 @@ public class ItemBuilder {
             this.itemMeta = this.itemStack.getItemMeta();
         }
         if (this.displayName != null) {
-            this.itemMeta.setDisplayName(this.displayName);
+            this.itemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.displayName));
         }
         if (this.textComponent != null) {
             this.itemMeta.displayName(textComponent);
@@ -570,6 +582,13 @@ public class ItemBuilder {
         }
 
         this.itemStack.setAmount(this.amount);
+        if (this.itemMeta != null) {
+            this.itemMeta.setCustomModelData(modelData);
+        }
+
+        if (this.hide) {
+            this.itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ITEM_SPECIFICS, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE, ItemFlag.HIDE_UNBREAKABLE);
+        }
 
         if (this.glow) {
             this.itemMeta.addEnchant(Enchantment.ARROW_DAMAGE, 1, true);

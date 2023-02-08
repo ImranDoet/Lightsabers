@@ -5,6 +5,7 @@ api-version: 1.19
 authors: [ eenarmige_klasse ]
 depend:
   - BKCommonLib
+  - MMOItems
 commands:
   lightsabers:
     description: Lightsaber command

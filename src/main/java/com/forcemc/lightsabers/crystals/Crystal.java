@@ -73,7 +73,8 @@ public class Crystal implements ConfigurationSerializable {
     public ItemStack buildItem() {
         org.bukkit.inventory.ItemStack itemStack = ItemUtil.createItem(new ItemBuilder(Material.PAPER).displayName(Component.text(getName()).color(TextColor.fromHexString(getHexCode()))).build());
         CommonTagCompound commonTagCompound = ItemUtil.getMetaTag(itemStack, true);
-        commonTagCompound.putValue("isHilt", boolean.class, true);
+        commonTagCompound.putValue("isCrystal", boolean.class, true);
+        commonTagCompound.putValue("crystalID", String.class, uuid.toString());
         return itemStack;
     }
 
