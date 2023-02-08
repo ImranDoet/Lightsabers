@@ -12,8 +12,12 @@
     <name>Lightsabers</name>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.bkcommonlib.version>1.19.2-v3</project.bkcommonlib.version>
+        <project.cloud.version>1.8.0-SNAPSHOT</project.cloud.version>
     </properties>
 
     <build>
@@ -30,7 +34,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -39,6 +43,25 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <!-- BKCommonLib relocations of Cloud command framework -->
+                                <relocation>
+                                    <pattern>cloud.commandframework</pattern>
+                                    <shadedPattern>com.bergerkiller.bukkit.common.dep.cloud</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.leangen.geantyref</pattern>
+                                    <shadedPattern>com.bergerkiller.bukkit.common.dep.typetoken</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>me.lucko.commodore</pattern>
+                                    <shadedPattern>com.bergerkiller.bukkit.common.dep.me.lucko.commodore</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.kyori</pattern>
+                                    <shadedPattern>com.bergerkiller.bukkit.common.dep.net.kyori</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
@@ -52,18 +75,37 @@
         </resources>
     </build>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Maven Plugin Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <repositories>
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-        </repository>
+
         <repository>
             <id>phoenix</id>
             <url>https://nexus.phoenixdevt.fr/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>MG-Dev Jenkins CI Maven Repository</id>
+            <url>https://ci.mg-dev.eu/plugin/repository/everything</url>
+        </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>"https://s01.oss.sonatype.org/content/groups/public/"</url>
         </repository>
     </repositories>
 
@@ -75,10 +117,44 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>BKCommonLib</artifactId>
+            <version>${project.bkcommonlib.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-platform-bukkit</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bergerhealer.cloud.commandframework</groupId>
+            <artifactId>cloud-paper</artifactId>
+            <version>${project.cloud.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bergerhealer.cloud.commandframework</groupId>
+            <artifactId>cloud-annotations</artifactId>
+            <version>${project.cloud.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bergerhealer.cloud.commandframework</groupId>
+            <artifactId>cloud-minecraft-extras</artifactId>
+            <version>${project.cloud.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>net.Indyuce</groupId>
             <artifactId>MMOItems-API</artifactId>
             <version>6.9.2-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.rysefoxx.inventory</groupId>
+            <artifactId>RyseInventory-Plugin</artifactId>
+            <version>1.5.7</version>
         </dependency>
     </dependencies>
 </project>

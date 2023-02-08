@@ -1,5 +1,9 @@
-name: Lightsabers
+name: xLightsabers
 version: '${project.version}'
 main: com.forcemc.lightsabers.Lightsabers
 api-version: 1.19
 authors: [ eenarmige_klasse ]
+commands:
+  lightsaber:
+    description: Lightsaber command
+    aliases: lightsabers
