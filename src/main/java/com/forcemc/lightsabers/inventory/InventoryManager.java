@@ -13,6 +13,7 @@ import io.github.rysefoxx.inventory.anvilgui.AnvilGUI;
 import io.github.rysefoxx.inventory.plugin.content.IntelligentItem;
 import io.github.rysefoxx.inventory.plugin.content.InventoryContents;
 import io.github.rysefoxx.inventory.plugin.content.InventoryProvider;
+import io.github.rysefoxx.inventory.plugin.enums.DisabledEvents;
 import io.github.rysefoxx.inventory.plugin.enums.InventoryOpenerType;
 import io.github.rysefoxx.inventory.plugin.pagination.Pagination;
 import io.github.rysefoxx.inventory.plugin.pagination.RyseAnvil;
@@ -62,6 +63,7 @@ public class InventoryManager {
                 }));
 
                 for (Crystal crystal : lightsabers.getCrystalManager().getCrystals()) {
+                    if (crystal.isRemoval()) continue;
                     pagination.addItem(IntelligentItem.of(new ItemBuilder(Material.PAPER).displayName(Component.text(crystal.getName()).color(TextColor.fromHexString(crystal.getHexCode()))).build(), inventoryClickEvent -> {
                         pagination.inventory().close(player);
                         buildCrystal(player, crystal);
@@ -140,7 +142,7 @@ public class InventoryManager {
     }
 
     public void buildForge(Player player) {
-        RyseInventory.builder().ignoredSlots(lightsabers.getConfigurationManager().getCrystalSlot(), lightsabers.getConfigurationManager().getForgeSlot(), lightsabers.getConfigurationManager().getSaberSlot(), lightsabers.getConfigurationManager().getHiltSlot()).title(Component.text(ChatColor.translateAlternateColorCodes('&', lightsabers.getConfigurationManager().getInventoryTitle()))).rows(3).provider(new InventoryProvider() {
+        RyseInventory.builder().ignoreEvents(DisabledEvents.INVENTORY_DRAG).ignoredSlots(lightsabers.getConfigurationManager().getCrystalSlot(), lightsabers.getConfigurationManager().getForgeSlot(), lightsabers.getConfigurationManager().getSaberSlot(), lightsabers.getConfigurationManager().getHiltSlot()).title(Component.text(ChatColor.translateAlternateColorCodes('&', lightsabers.getConfigurationManager().getInventoryTitle()))).rows(3).provider(new InventoryProvider() {
             @Override
             public void init(Player player, InventoryContents contents) {
                 contents.addAdvancedSlot(lightsabers.getConfigurationManager().getCrystalSlot(), inventoryClickEvent -> {
@@ -165,6 +167,8 @@ public class InventoryManager {
 
                 }));
             }
+
+
         }).build(lightsabers, inventoryManager).open(player);
 
     }

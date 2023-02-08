@@ -11,6 +11,7 @@ public class ConfigurationManager {
     private FileConfiguration configuration, crystals;
 
     private int forgeSlot, hiltSlot, saberSlot, crystalSlot;
+    private boolean fresh;
     private String inventoryTitle;
 
     public ConfigurationManager(Lightsabers lightsabers) {
@@ -23,24 +24,25 @@ public class ConfigurationManager {
         configuration = new FileConfiguration(lightsabers);
         configuration.load();
 
-        configuration.setHeader("options.forge.inventory title", "\nThis is the title for the forge inventory");
+        configuration.setHeader("options.forge.inventory title", "This is the title for the forge inventory");
         inventoryTitle = configuration.get("options.forge.inventory title", "&3Lightsaber Forge");
 
-        configuration.setHeader("options.forge.slots.forge button", "\nThis is the slot for the final forging button (1-18)");
+        configuration.setHeader("options.forge.slots.forge button", "This is the slot for the final forging button (1-18)");
         forgeSlot = configuration.get("options.forge.slots.forge button", 11);
 
-        configuration.setHeader("options.forge.slots.crystal input", "\nThis is the slot for the crystal input (1-18)");
-        hiltSlot = configuration.get("options.forge.slots.crystal input", 2);
+        configuration.setHeader("options.forge.slots.crystal input", "This is the slot for the crystal input (1-18)");
+        crystalSlot = configuration.get("options.forge.slots.crystal input", 2);
 
-        configuration.setHeader("options.forge.slots.hilt input", "\nThis is the slot for the hilt input (1-18)");
-        forgeSlot = configuration.get("options.forge.slots.hilt input", 5);
+        configuration.setHeader("options.forge.slots.hilt input", "This is the slot for the hilt input (1-18)");
+        hiltSlot = configuration.get("options.forge.slots.hilt input", 5);
 
-        configuration.setHeader("options.forge.slots.saber output", "\nThis is the slot where the final saber is outputted (1-18)");
-        forgeSlot = configuration.get("options.forge.slots.saber output", 8);
+        configuration.setHeader("options.forge.slots.saber output", "This is the slot where the final saber is outputted (1-18)");
+        saberSlot = configuration.get("options.forge.slots.saber output", 8);
 
         configuration.save();
 
         crystals = new FileConfiguration(lightsabers, "crystals.yml");
+        if (!crystals.exists()) fresh = true;
         crystals.load();
     }
 
@@ -54,6 +56,10 @@ public class ConfigurationManager {
 
     public int getCrystalSlot() {
         return crystalSlot - 1;
+    }
+
+    public boolean isFresh() {
+        return fresh;
     }
 
     public int getForgeSlot() {

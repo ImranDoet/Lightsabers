@@ -44,7 +44,7 @@ public class Crystal implements ConfigurationSerializable {
     }
 
     public String getHexCode() {
-        return hexCode;
+        return (hexCode == null) ? "#FFFFFF" : hexCode;
     }
 
     public void setHexCode(String hexCode) {
@@ -71,8 +71,9 @@ public class Crystal implements ConfigurationSerializable {
     }
 
     public ItemStack buildItem() {
-        ItemStack itemStack = new ItemBuilder(Material.PAPER).displayName(Component.text(getName()).color(TextColor.fromHexString(getHexCode()))).build();
-        ItemUtil.getMetaTag(ItemUtil.createItem(itemStack), true).putValue("isHilt", boolean.class, true);
+        org.bukkit.inventory.ItemStack itemStack = ItemUtil.createItem(new ItemBuilder(Material.PAPER).displayName(Component.text(getName()).color(TextColor.fromHexString(getHexCode()))).build());
+        CommonTagCompound commonTagCompound = ItemUtil.getMetaTag(itemStack, true);
+        commonTagCompound.putValue("isHilt", boolean.class, true);
         return itemStack;
     }
 
