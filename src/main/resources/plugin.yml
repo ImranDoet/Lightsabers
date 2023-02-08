@@ -3,7 +3,9 @@ version: '${project.version}'
 main: com.forcemc.lightsabers.Lightsabers
 api-version: 1.19
 authors: [ eenarmige_klasse ]
+depend:
+  - BKCommonLib
 commands:
-  lightsaber:
+  lightsabers:
     description: Lightsaber command
     aliases: lightsabers
